@@ -2,5 +2,5 @@
 CONTAINER_NAME=routeur_hkovac
 
 docker pull alpine:latest
-docker build c_router -t  $CONTAINER_NAME
+docker build _hkovac-2 -t  $CONTAINER_NAME
 

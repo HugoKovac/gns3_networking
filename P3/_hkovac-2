@@ -1,0 +1,33 @@
+vtysh
+conf t
+
+# don't handle ipv6
+no ipv6 forwarding
+!
+interface eth0
+	# assign ip address to interface eth0
+	ip address 10.1.1.2/30
+	# register eth0 to ospf area 0
+	ip ospf area 0
+!
+interface lo
+	# assign ip address to loopback interface
+	ip address 1.1.1.2/32
+	# register loopback interface to ospf area 0
+	ip ospf area 0
+!
+router bgp 1
+	# Configure bgp of AS 1
+	neighbor 1.1.1.1 remote-as 1
+	# This statement forces BGP to use the IP address of the loopback interface when BGP talks to neighbor 
+	neighbor 1.1.1.1 update-source lo
+	!
+	address-family l2vpn evpn
+		# activate neighbor
+		neighbor 1.1.1.1 activate
+		# necessary to enable evpn on bgp
+		advertise-all-vni
+	exit-address-family
+!
+router ospf
+end

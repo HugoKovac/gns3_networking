@@ -1,8 +1,9 @@
 vtysh
 conf t
 
-hostname routeur_hkovac-1
+# don't handle ipv6
 no ipv6 forwarding
+# define ip to eth0, eth1, eth2, lo
 !
 interface eth0
 	ip address 10.1.1.1/30
@@ -16,18 +17,26 @@ interface eth2
 interface lo
 	ip address 1.1.1.1/32
 !
+# enable bgp as 1
 router bgp 1
+	# define peer group
 	neighbor ibgp peer-group
+	# define remote as of group and router
 	neighbor ibgp remote-as 1
+	# set loopback as source of bgp
 	neighbor ibgp update-source lo
+	# set range of ip to listen
 	bgp listen range 1.1.1.0/29 peer-group ibgp
 	!
 	address-family l2vpn evpn
+		# activate neighbor
 		neighbor ibgp activate
+		# set this router as route reflector
 		neighbor ibgp route-reflector-client
 	exit-address-family
 !
 router ospf
+	# enable ospf for all network in area 0
 	network 0.0.0.0/0 area 0
 
 end

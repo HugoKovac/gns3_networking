@@ -1,0 +1,45 @@
+bash
+# create bridge to connect vxlan and eth0
+ip link add br0 type bridge
+ip link set dev br0 up
+# create vxlan interface vni 10
+ip link add vxlan10 type vxlan id 10 dstport 4789
+ip link set dev vxlan10 up
+# add vxlan10 and eth0 to bridge
+brctl addif br0 vxlan10
+brctl addif br0 eth0
+
+# go in conf mode
+vtysh
+conf t
+
+# don't handle ipv6
+no ipv6 forwarding
+!
+interface eth1
+	# assign ip address to interface eth1
+	ip address 10.1.1.6/30
+	# register eth0 to ospf area 0
+	ip ospf area 0
+!
+interface lo
+	# assign ip address to loopback interface
+	ip address 1.1.1.3/32
+	# register loopback interface to ospf area 0
+	ip ospf area 0
+!
+router bgp 1
+	# Configure bgp of AS 1
+	neighbor 1.1.1.1 remote-as 1
+	# This statement forces BGP to use the IP address of the loopback interface when BGP talks to neighbor
+	neighbor 1.1.1.1 update-source lo
+	!
+	address-family l2vpn evpn
+		# activate neighbor
+		neighbor 1.1.1.1 activate
+		advertise-all-vni
+	# necessary to enable evpn on bgp
+	exit-address-family
+!
+router ospf
+end
